@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-plugin-gameservices"
+    version="1.0.0">
+	
+    <name>Cordova GameServices plugin</name>
+    <description>Integrate host platform GameServices (PlayGames on Android, GameCenter for iOS, XboxLive for Windows)</description>
+    <author>NonostanteGames</author>	
+    <license>MIT</license>
+    <keywords>cordova,plugin,game services,game,google play games,game center,xbox live</keywords>
+    <repo>https://github.com/nonostante/cordova-plugin-gameservices</repo>
+    <issue>https://github.com/nonostante/cordova-plugin-gameservices/issues</issue>	
+	<engines>
+	    <engine name="cordova" version=">=3.0.0" />
+	</engines>
+ 		
+    <js-module src="www/gameServices.js" name="gameServices">
+        <clobbers target="window.gameServices" />
+    </js-module>
+
+	<dependency id="cordova-plugin-add-swift-support" version="1.6.1"/>	
+
+    <!-- android -->
+    <platform name="android">
+		<preference name="APP_ID" />	
+
+	    <config-file target="res/xml/config.xml" parent="/*">
+			<feature name="GameServices" >
+				<param name="android-package" value="io.nonostante.games.cordova.GameServices"/>
+			</feature>
+        </config-file>
+		
+		<config-file target="AndroidManifest.xml" parent="/manifest/application">
+			<meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id" />
+			<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />			
+		</config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+        </config-file>		
+	
+		<source-file src="src/android/ids.xml" target-dir="res/values" />
+		<config-file target="res/values/ids.xml" parent="/*">
+			<string name="app_id">$APP_ID</string>
+		</config-file>
+
+		<source-file src="src/android/GameServices.java" target-dir="src/io/nonostante/games/cordova"/>
+		<source-file src="src/android/GameHelper.java" target-dir="src/io/nonostante/games/cordova"/>		
+		<source-file src="src/android/GameHelperUtils.java" target-dir="src/io/nonostante/games/cordova"/>	
+	
+		<framework src="com.google.android.gms:play-services-games:+" />
+		<framework src="com.google.android.gms:play-services-plus:+" />
+		<framework src="com.google.android.gms:play-services-ads:+" />
+	</platform>
+	
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+		    <feature name="GameServices">
+		        <param name="ios-package" value="GameServices" />
+		        <param name="onload" value="true" />
+		    </feature>
+        </config-file>
+               
+        <source-file src="src/ios/GameServices.swift" compiler-flags="-fno-objc-arc" />
+
+        <framework src="GameKit.framework" />                	
+    </platform>	
+
+	<!-- windows -->
+	<platform name="windows">
+		<js-module src="src/windows/gameServicesProxy.js" name="GameServicesProxy">
+            <merges target="" />
+        </js-module>	
+	</platform>
+</plugin>
