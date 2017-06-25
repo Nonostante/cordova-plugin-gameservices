@@ -1,0 +1,43 @@
+{
+  "name": "cordova-plugin-gameservices",
+  "version": "1.0.0",
+  "description": "Integrate host platform GameServices (PlayGames on Android, GameCenter for iOS, XboxLive for Windows)",
+  "author": "NonostanteGames",
+  "license": "MIT",
+  "types": "./typings/cordova-plugin-gameservices.d.ts",
+  "cordova": {
+    "id": "cordova-plugin-gameservices",
+    "platforms": [
+      "android",
+      "ios",
+      "windows"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nonostante/cordova-plugin-gameservices.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nonostante/cordova-plugin-gameservices/issues"
+  },
+  "homepage": "https://github.com/nonostante/cordova-plugin-gameservices#readme",
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova",
+    "plugin",
+    "cordova-android",
+    "cordova-ios",
+    "cordova-windows",
+    "game",
+    "game services",
+    "google play games",
+    "game center",
+    "xbox live"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=6.0.0"
+    }
+  ]
+}
