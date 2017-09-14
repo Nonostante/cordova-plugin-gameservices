@@ -161,11 +161,11 @@ class GameServices : CDVPlugin {
         
         let leaderboardId = command.argument(at: 0) as! String
         let value = command.argument(at: 1, withDefault: 0) as! Int
-        let tag = command.argument(at: 2, withDefault: 0) as! UInt64?
+        let tag = command.argument(at: 2, withDefault: 0)
         
         let score = GKScore(leaderboardIdentifier: leaderboardId)
         score.value = Int64(value)
-        score.context = tag != nil ? UInt64(tag!) : 0
+        score.context = self.getTag(tag)
         
         GKScore.report([score]) { (error) in
             if (error == nil) {
@@ -185,8 +185,8 @@ class GameServices : CDVPlugin {
             let dict = entry as! NSDictionary
             let score = GKScore(leaderboardIdentifier: dict.value(forKey: "leaderboardId") as! String)
             score.value = Int64(dict.value(forKey: "score") as! Int)
-            let tag = dict.value(forKey: "tag") as? Int
-            score.context = tag != nil ? UInt64(tag!) : 0
+            let tag = dict.value(forKey: "tag")
+            score.context = self.getTag(tag)
             return score
         }
         
@@ -331,6 +331,26 @@ class GameServices : CDVPlugin {
             }
         }
     }
+
+    private func getTag(_ value: Any?) -> UInt64 {
+        if value == nil {
+            return 0
+        } else if let s = value as? String {
+            if let v = UInt64(s, radix: 16) {
+                return v
+            }
+        } else if let v = value as? Int {
+            return UInt64(v)
+        } else if let v = value as? UInt {
+            return UInt64(v)
+        } else if let v = value as? Int64 {
+            return UInt64(v)
+        } else if let v = value as? UInt64 {
+            return v
+        }
+        
+        return 0
+    }    
     
     private func getPlayerOBJ(_ player: GKPlayer) -> [String:Any] {
         return [
