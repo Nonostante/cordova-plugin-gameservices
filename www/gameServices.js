@@ -33,7 +33,7 @@ GameServices = {
 		cordova.exec(success, failure, "GameServices", "getPlayerDetails", []);
 	},
 	getPlayerScore: function (leaderboardId, span, success, failure) {
-		cordova.exec(success, failure, "GameServices", "showLeaderboards", [leaderboardId, span]);
+		cordova.exec(success, failure, "GameServices", "getPlayerScore", [leaderboardId, span]);
 	},
 	submitScore: function (leaderboardId, score, tag, success, failure) {
 		cordova.exec(success, failure, "GameServices", "submitScore", [leaderboardId, score, tag]);
