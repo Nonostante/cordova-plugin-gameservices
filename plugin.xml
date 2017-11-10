@@ -19,7 +19,7 @@
         <clobbers target="window.gameServices" />
     </js-module>
 
-	<dependency id="cordova-plugin-add-swift-support" version="1.6.1"/>	
+	<dependency id="cordova-plugin-add-swift-support" version="1.7.0" />
 
     <!-- android -->
     <platform name="android">
@@ -68,4 +68,18 @@
 
         <framework src="GameKit.framework" />                	
     </platform>	
+
+    <!-- osx -->
+    <platform name="osx">
+        <config-file target="config.xml" parent="/*">
+		    <feature name="GameServices">
+		        <param name="osx-package" value="GameServices" />
+		        <param name="onload" value="true" />
+		    </feature>
+        </config-file>
+               
+        <source-file src="src/ios/GameServices.swift" compiler-flags="-fno-objc-arc" />
+
+        <framework src="GameKit.framework" />                	
+    </platform>		
 </plugin>

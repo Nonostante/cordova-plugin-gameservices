@@ -22,7 +22,10 @@ class GameServices : CDVPlugin {
         obj.append(["code": code, "message": message])
         return CDVPluginResult(status:CDVCommandStatus_ERROR, messageAs: obj)
     }
-    
+
+    private func getOkResult(_ message: String) -> CDVPluginResult {
+        return CDVPluginResult(status: CDVCommandStatus_OK, messageAs: message)
+    }
     private func getOkResult(_ message: [Any]) -> CDVPluginResult {
         return CDVPluginResult(status: CDVCommandStatus_OK, messageAs: message)
     }
@@ -33,6 +36,9 @@ class GameServices : CDVPlugin {
         return CDVPluginResult(status: CDVCommandStatus_OK)
     }
     
+    private func sendOkResult(_ command: CDVInvokedUrlCommand, _ message: String) {
+        self.commandDelegate.send(getOkResult(message), callbackId: command.callbackId)
+    }
     private func sendOkResult(_ command: CDVInvokedUrlCommand, _ message: [AnyHashable:Any]) {
         self.commandDelegate.send(getOkResult(message), callbackId: command.callbackId)
     }
@@ -68,8 +74,8 @@ class GameServices : CDVPlugin {
         
         
         player.authenticateHandler = {(ViewController, error) in
-            if((ViewController) != nil) {
-                self.viewController.present(ViewController!, animated: true, completion: nil)
+            if(ViewController != nil) {
+                self.showController(ViewController!)
             } else if (player.isAuthenticated) {
                 self.connected = true
                 let result = self.getOkResult(self.getPlayerOBJ(player))
@@ -109,6 +115,7 @@ class GameServices : CDVPlugin {
         
         let leaderboard = GKLeaderboard()
         leaderboard.identifier = leaderboardId
+        
         switch span {
             case 1: leaderboard.timeScope = GKLeaderboardTimeScope.week
             case 2: leaderboard.timeScope = GKLeaderboardTimeScope.allTime
@@ -137,6 +144,7 @@ class GameServices : CDVPlugin {
         let leaderboard = GKLeaderboard()
         leaderboard.identifier = leaderboardId
         leaderboard.playerScope = GKLeaderboardPlayerScope.global
+        
         switch span {
             case 1: leaderboard.timeScope = GKLeaderboardTimeScope.week
             case 2: leaderboard.timeScope = GKLeaderboardTimeScope.allTime
@@ -210,6 +218,7 @@ class GameServices : CDVPlugin {
         let controller = GKGameCenterViewController()
         controller.viewState = GKGameCenterViewControllerState.leaderboards
         controller.leaderboardIdentifier = leaderboardId
+        
         switch span {
             case 1: controller.leaderboardTimeScope = GKLeaderboardTimeScope.week
             case 2: controller.leaderboardTimeScope = GKLeaderboardTimeScope.allTime
@@ -217,7 +226,8 @@ class GameServices : CDVPlugin {
         }
         
         controller.gameCenterDelegate = createGCDelegate(command)
-        self.viewController.present(controller, animated: true, completion: nil)
+        
+        self.showController(controller)
     }
 
     
@@ -229,7 +239,8 @@ class GameServices : CDVPlugin {
         let controller = GKGameCenterViewController()
         controller.viewState = GKGameCenterViewControllerState.leaderboards
         controller.gameCenterDelegate = createGCDelegate(command)
-        self.viewController.present(controller, animated: true, completion: nil)
+
+        self.showController(controller)
     }
     
     func getAchievements(_ command: CDVInvokedUrlCommand){
@@ -315,7 +326,8 @@ class GameServices : CDVPlugin {
         let controller = GKGameCenterViewController()
         controller.viewState = GKGameCenterViewControllerState.achievements
         controller.gameCenterDelegate = createGCDelegate(command)
-        self.viewController.present(controller, animated: true, completion: nil)
+
+        self.showController(controller)
     }
     
     func resetAchievements(_ command: CDVInvokedUrlCommand){
@@ -330,6 +342,104 @@ class GameServices : CDVPlugin {
                 self.sendErrorResult(command, ERROR.SERVICE_ERROR, error!.localizedDescription)
             }
         }
+    }
+    
+    func saveGame(_ command: CDVInvokedUrlCommand) {
+        if(!checkConnected(command)){
+            return
+        }
+        
+        let player = GKLocalPlayer.localPlayer()
+        if(!player.isAuthenticated){
+            self.sendErrorResult(command, ERROR.NOT_CONNECTED, "Not Connected")
+            return
+        }
+        
+        let name = command.argument(at: 0) as! String
+        let data = (command.argument(at: 1) as! String).data(using: String.Encoding.utf8)!
+        
+        player.saveGameData(data, withName: name) { (saveGame, error) in
+            if(error == nil){
+                self.sendOkResult(command)
+            } else {
+                self.sendErrorResult(command, ERROR.SERVICE_ERROR, error!.localizedDescription)
+            }
+        }
+    }
+    
+    func deleteSaveGame(_ command: CDVInvokedUrlCommand) {
+        if(!checkConnected(command)){
+            return
+        }
+        
+        let player = GKLocalPlayer.localPlayer()
+        if(!player.isAuthenticated){
+            self.sendErrorResult(command, ERROR.NOT_CONNECTED, "Not Connected")
+            return
+        }
+        
+        let name = command.argument(at: 0) as! String
+        
+        player.deleteSavedGames(withName: name) { (error) in
+            if(error == nil){
+                self.sendOkResult(command)
+            } else {
+                self.sendErrorResult(command, ERROR.SERVICE_ERROR, error!.localizedDescription)
+            }
+        }
+    }
+    
+    func loadSaveGame(_ command: CDVInvokedUrlCommand) {
+        if(!checkConnected(command)){
+            return
+        }
+        
+        let player = GKLocalPlayer.localPlayer()
+        if(!player.isAuthenticated){
+            self.sendErrorResult(command, ERROR.NOT_CONNECTED, "Not Connected")
+            return
+        }
+        
+        let name = command.argument(at: 0) as! String
+        
+        player.fetchSavedGames { (savedGames, error) in
+            if(error == nil) {
+                if (savedGames == nil){
+                    self.sendOkResult(command)
+                } else {
+                    let savedGames = savedGames!.filter({ $0.name == name })
+                    let savedGame: GKSavedGame
+                    if(savedGames.count == 1) {
+                        savedGame = savedGames[0];
+                    } else {
+                        savedGame = savedGames.sorted(by: {$0.modificationDate!.compare($1.modificationDate!) == .orderedDescending })[0]
+                    }
+                    
+                    savedGame.loadData(completionHandler: { (data, error) in
+                        if(error == nil){
+                            if(savedGames.count > 1) {
+                                player.resolveConflictingSavedGames(savedGames, with: data!, completionHandler: nil)
+                            }
+                            self.sendOkResult(command, String(data: data!, encoding: String.Encoding.utf8)!)
+                        } else {
+                            self.sendErrorResult(command, ERROR.SERVICE_ERROR, error!.localizedDescription)
+                        }
+                    })
+                }
+            } else {
+                self.sendErrorResult(command, ERROR.SERVICE_ERROR, error!.localizedDescription)
+            }
+        }
+    }
+    
+    private func showController(_ controller: NSViewController) {
+        #if os(iOS)
+            self.viewController.present(controller, animated: true, completion: nil)
+        #else
+            let dialog = GKDialogController.shared()
+            dialog.parentWindow = self.webView.window!
+            dialog.present(controller)
+        #endif
     }
 
     private func getTag(_ value: Any?) -> UInt64 {
@@ -397,8 +507,13 @@ class GameCenterDelegate : NSObject, GKGameCenterControllerDelegate {
     }
     
     func gameCenterViewControllerDidFinish(_ controller: GKGameCenterViewController) {
-        controller.dismiss(animated: true, completion: {
+        #if os(iOS)
+            controller.dismiss(animated: true, completion: {
+                self.handler()
+            })
+        #else
+            GKDialogController.shared().dismiss(controller)
             self.handler()
-        })
+        #endif
     }
 }

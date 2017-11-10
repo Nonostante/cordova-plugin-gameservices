@@ -10,7 +10,8 @@
     "platforms": [
       "android",
       "ios",
-      "windows"
+      "windows",
+      "osx"
     ]
   },
   "repository": {
@@ -27,6 +28,7 @@
     "plugin",
     "cordova-android",
     "cordova-ios",
+    "cordova-osx",
     "cordova-windows",
     "game",
     "game services",

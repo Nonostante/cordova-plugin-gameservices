@@ -64,6 +64,15 @@ GameServices = {
 	},
 	resetAchievements: function (success, failure) {
 		cordova.exec(success, failure, "GameServices", "resetAchievements", []);
+	},
+	saveGame: function (name, data, success, failure) {
+		cordova.exec(success, failure, "GameServices", "saveGame", [name, data]);
+	},
+	loadSaveGame: function (name, success, failure) {
+		cordova.exec(success, failure, "GameServices", "loadSaveGame", [name]);
+	},
+	deleteSaveGame: function (name, success, failure) {
+		cordova.exec(success, failure, "GameServices", "deleteSaveGame", [name]);
 	}
 };
 
