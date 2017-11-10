@@ -60,6 +60,12 @@ class GameServices : CDVPlugin {
         return true
     }
     
+    @objc private func onActivate() {
+        self.webView.window?.level = NSNormalWindowLevel
+    }
+    
+    private var windowLevel: NSWindowLevel = 0
+    
     func login(_ command: CDVInvokedUrlCommand) {
         let player = GKLocalPlayer.localPlayer()
         
@@ -72,6 +78,10 @@ class GameServices : CDVPlugin {
             return
         }
         
+        NotificationCenter.default.addObserver(self, selector: #selector(self.onActivate), name: NSNotification.Name.NSApplicationDidBecomeActive, object: nil)
+        
+        self.windowLevel = self.webView.window!.level
+        self.webView.window?.level = NSNormalWindowLevel
         
         player.authenticateHandler = {(ViewController, error) in
             if(ViewController != nil) {
@@ -87,6 +97,8 @@ class GameServices : CDVPlugin {
                 result.setKeepCallbackAs(true)
                 self.commandDelegate.send(result, callbackId: command.callbackId)
             }
+            
+            self.webView.window?.level = self.windowLevel
         }
         
         setupDone = true
