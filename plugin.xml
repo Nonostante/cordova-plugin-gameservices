@@ -50,9 +50,9 @@
 		<source-file src="src/android/GameHelper.java" target-dir="src/io/nonostante/games/cordova"/>		
 		<source-file src="src/android/GameHelperUtils.java" target-dir="src/io/nonostante/games/cordova"/>	
 	
-		<framework src="com.google.android.gms:play-services-games:+" />
-		<framework src="com.google.android.gms:play-services-plus:+" />
-		<framework src="com.google.android.gms:play-services-ads:+" />
+		<framework src="com.google.android.gms:play-services-games:11.0.4" />
+		<framework src="com.google.android.gms:play-services-plus:11.0.4" />
+		<framework src="com.google.android.gms:play-services-ads:11.0.4" />
 	</platform>
 	
     <!-- ios -->
@@ -82,4 +82,10 @@
 
         <framework src="GameKit.framework" />                	
     </platform>		
+	<!-- windows -->
+	<platform name="windows">
+		<js-module src="src/windows/gameServicesProxy.js" name="GameServicesProxy">
+            <merges target="" />
+        </js-module>	
+	</platform>
 </plugin>

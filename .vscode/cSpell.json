@@ -6,8 +6,10 @@
     "language": "en",
     // words - list of words to be always considered correct
     "words": [
-        "gameservices",
+        "Leaderboard",
+        "Leaderboards",
         "Nonostante",
+        "gameservices",
         "xbox"
     ],
     // flagWords - list of words to be always considered incorrect

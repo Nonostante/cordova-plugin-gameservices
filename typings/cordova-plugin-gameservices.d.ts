@@ -51,7 +51,7 @@ declare module Cordova {
             isLoggedIn(): boolean
 
             getPlayerScore(leaderboardId: string, span: GameServices.LeaderboardEntrySpan, success: (data: GameServices.LeaderboardScoreEntry) => void, fail: (error: GameServices.ServiceError) => void): void
-            getLeaderboardScores(leaderboardId: string, scope: "player", span: GameServices.LeaderboardEntrySpan, maxResults: number, success: (data: GameServices.LeaderboardScoreEntry[]) => void, fail: (error: GameServices.ServiceError) => void): void
+            getLeaderboardScores(leaderboardId: string, scope: "top" | "player", span: GameServices.LeaderboardEntrySpan, maxResults: number, success: (data: GameServices.LeaderboardScoreEntry[]) => void, fail: (error: GameServices.ServiceError) => void): void
 
             submitScore(leaderboardId: string, score: number, tag?: any, success?: () => void, fail?: (ServiceError) => void): void
             submitScores(entries: { leaderboardId: string, score: number, tag?: any }[], success?: () => void, fail?: (ServiceError) => void): void
