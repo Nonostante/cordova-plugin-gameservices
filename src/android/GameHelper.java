@@ -41,8 +41,6 @@ public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
 
     static final String TAG = "GameHelper";
 
-	private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000 ;
-	
     /** Listener for sign-in success or failure events. */
     public interface GameHelperListener {
         /**
@@ -503,10 +501,7 @@ public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
         }
 
         // Ready to disconnect
-        debugLog("Disconnecting client.");
-        mConnectOnStart = false;
-        mConnecting = false;
-        mGoogleApiClient.disconnect();
+        disconnect();
     }
 
     /**
@@ -836,7 +831,26 @@ public class GameHelper implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+    public void disconnect(int reason){
+        if(mSignInFailureReason == null){
+            mSignInFailureReason = new SignInFailureReason(reason, 0);
+        } else{
+            mSignInFailureReason.mServiceErrorCode = reason;
+        }
+
+        disconnect();
+
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                notifyListener(false);
+            }
+        }, 500);
+    }
+
     public void disconnect() {
+        mConnecting = false;
+        mConnectOnStart = false;
         if (mGoogleApiClient.isConnected()) {
             debugLog("Disconnecting client.");
             mGoogleApiClient.disconnect();

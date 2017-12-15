@@ -21,6 +21,8 @@ public class GameServices extends CordovaPlugin {
     private GameHelper mHelper;
     private boolean _connected = false;
 
+    private final int RC_UI = 9004;
+
     abstract class PluginResultCallbacks<R extends Result> extends ResultCallbacks<R> {
         private CallbackContext _context;
 
@@ -57,6 +59,7 @@ public class GameServices extends CordovaPlugin {
         static final int NOT_CONNECTED = 3;
         static final int SERVICE_ERROR = 4;
         static final int LOGIN_PENDING = 5;
+        static final int LOGOUT = 9;
     }
 
     @Override
@@ -273,7 +276,7 @@ public class GameServices extends CordovaPlugin {
                 cordova.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        cordova.getActivity().startActivityForResult(Games.Leaderboards.getLeaderboardIntent(getGameHelper().getApiClient(), leaderboardId, span), 0);
+                        cordova.startActivityForResult(GameServices.this, Games.Leaderboards.getLeaderboardIntent(getGameHelper().getApiClient(), leaderboardId, span), RC_UI);
                         callbackContext.success();
                     }
                 });
@@ -287,7 +290,7 @@ public class GameServices extends CordovaPlugin {
                 cordova.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        cordova.getActivity().startActivityForResult(Games.Leaderboards.getAllLeaderboardsIntent(getGameHelper().getApiClient()), 0);
+                        cordova.startActivityForResult(GameServices.this, Games.Leaderboards.getAllLeaderboardsIntent(getGameHelper().getApiClient()), RC_UI);
                         callbackContext.success();
                     }
                 });
@@ -344,7 +347,7 @@ public class GameServices extends CordovaPlugin {
                 cordova.getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        cordova.getActivity().startActivityForResult(Games.Achievements.getAchievementsIntent(getGameHelper().getApiClient()), 0);
+                        cordova.startActivityForResult(GameServices.this, Games.Achievements.getAchievementsIntent(getGameHelper().getApiClient()), RC_UI);
                         callbackContext.success();
                     }
                 });
@@ -405,7 +408,13 @@ public class GameServices extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        getGameHelper().onActivityResult(requestCode, resultCode, intent);
+        if(requestCode == RC_UI) {
+            if(resultCode == GamesActivityResultCodes.RESULT_RECONNECT_REQUIRED){
+                getGameHelper().disconnect(ERROR.LOGOUT);
+            }
+        } else {
+            getGameHelper().onActivityResult(requestCode, resultCode, intent);
+        }
     }
 
     private boolean checkConnected(CallbackContext context) {
