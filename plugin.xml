@@ -12,7 +12,8 @@
     <repo>https://github.com/nonostante/cordova-plugin-gameservices</repo>
     <issue>https://github.com/nonostante/cordova-plugin-gameservices/issues</issue>	
 	<engines>
-	    <engine name="cordova" version=">=3.0.0" />
+	    <engine name="cordova" version=">=7.0.0" />
+	    <engine name="cordova-android" version=">=7.0.0" />
 	</engines>
  		
     <js-module src="www/gameServices.js" name="gameServices">
@@ -42,7 +43,7 @@
         </config-file>		
 	
 		<source-file src="src/android/ids.xml" target-dir="res/values" />
-		<config-file target="res/values/ids.xml" parent="/*">
+		<config-file target="app/src/main/res/values/ids.xml" parent="/*">
 			<string name="app_id">$APP_ID</string>
 		</config-file>
 
@@ -50,9 +51,10 @@
 		<source-file src="src/android/GameHelper.java" target-dir="src/io/nonostante/games/cordova"/>		
 		<source-file src="src/android/GameHelperUtils.java" target-dir="src/io/nonostante/games/cordova"/>	
 	
-		<framework src="com.google.android.gms:play-services-games:11.0.4" />
+        <framework src="src/android/cordova-googleplay.gradle" custom="true" type="gradleReference" />
+		<!-- <framework src="com.google.android.gms:play-services-games:11.0.4" />
 		<framework src="com.google.android.gms:play-services-plus:11.0.4" />
-		<framework src="com.google.android.gms:play-services-ads:11.0.4" />
+		<framework src="com.google.android.gms:play-services-ads:11.0.4" /> -->
 	</platform>
 	
     <!-- ios -->
