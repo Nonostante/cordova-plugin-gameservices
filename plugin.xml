@@ -19,7 +19,7 @@
         <clobbers target="window.gameServices" />
     </js-module>
 
-	<dependency id="cordova-plugin-add-swift-support" version="1.7.0" />
+	<dependency id="cordova-plugin-add-swift-support" version="1.7.1" />
 
     <!-- android -->
     <platform name="android">
