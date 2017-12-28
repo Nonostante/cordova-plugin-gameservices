@@ -60,12 +60,14 @@ class GameServices : CDVPlugin {
         return true
     }
     
+#if os(OSX)
     @objc private func onActivate() {
-        self.webView.window?.level = NSNormalWindowLevel
+            self.webView.window?.level = NSNormalWindowLevel
     }
     
     private var windowLevel: NSWindowLevel = 0
-    
+#endif
+
     func login(_ command: CDVInvokedUrlCommand) {
         let player = GKLocalPlayer.localPlayer()
         
@@ -78,10 +80,12 @@ class GameServices : CDVPlugin {
             return
         }
         
+#if os(OSX)
         NotificationCenter.default.addObserver(self, selector: #selector(self.onActivate), name: NSNotification.Name.NSApplicationDidBecomeActive, object: nil)
         
         self.windowLevel = self.webView.window!.level
         self.webView.window?.level = NSNormalWindowLevel
+#endif
         
         player.authenticateHandler = {(ViewController, error) in
             if(ViewController != nil) {
@@ -97,8 +101,9 @@ class GameServices : CDVPlugin {
                 result.setKeepCallbackAs(true)
                 self.commandDelegate.send(result, callbackId: command.callbackId)
             }
-            
+#if os(OSX)
             self.webView.window?.level = self.windowLevel
+#endif
         }
         
         setupDone = true
@@ -444,15 +449,18 @@ class GameServices : CDVPlugin {
         }
     }
     
-    private func showController(_ controller: NSViewController) {
-        #if os(iOS)
-            self.viewController.present(controller, animated: true, completion: nil)
-        #else
-            let dialog = GKDialogController.shared()
-            dialog.parentWindow = self.webView.window!
-            dialog.present(controller)
-        #endif
+#if os(iOS)
+    private func showController(_ controller: UIViewController) {
+        self.viewController.present(controller, animated: true, completion: nil)
     }
+#else
+    private func showController(_ controller: NSViewController) {
+        let dialog = GKDialogController.shared()
+        dialog.parentWindow = self.webView.window!
+        dialog.present(controller)
+    }
+#endif
+    
 
     private func getTag(_ value: Any?) -> UInt64 {
         if value == nil {
