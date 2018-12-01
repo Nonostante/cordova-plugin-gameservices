@@ -43,7 +43,7 @@ declare module Cordova {
         }
 
         interface GameService {
-            loginStatusChanged?: (state: number, error?: GameServices.ServiceError) => void
+            loginStatusChanged?: (state: GameServices.Player, error?: GameServices.ServiceError) => void
 
             login(): void
             logout(): void
