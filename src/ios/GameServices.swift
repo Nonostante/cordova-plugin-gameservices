@@ -206,7 +206,7 @@ class GameServices : CDVPlugin {
             return
         }
         
-        let scores = command.arguments.map { (entry) -> GKScore in
+        let scores = (command.arguments as [Any]).map { (entry) -> GKScore in
             let dict = entry as! NSDictionary
             let score = GKScore(leaderboardIdentifier: dict.value(forKey: "leaderboardId") as! String)
             score.value = Int64(dict.value(forKey: "score") as! Int)
