@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-gameservices",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Integrate host platform GameServices (PlayGames on Android, GameCenter for iOS, XboxLive for Windows)",
   "author": "NonostanteGames",
   "license": "MIT",

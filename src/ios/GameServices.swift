@@ -2,7 +2,6 @@
 import Foundation
 import GameKit
 
-@objc(GameServices)
 class GameServices : CDVPlugin {
     
     struct ERROR {
@@ -62,14 +61,14 @@ class GameServices : CDVPlugin {
     
 #if os(OSX)
     @objc private func onActivate() {
-            self.webView.window?.level = NSNormalWindowLevel
+        self.webView.window?.level = NSWindow.Level.normal
     }
     
-    private var windowLevel: NSWindowLevel = 0
+    private var windowLevel = NSWindow.Level(rawValue: 0)
 #endif
 
-    func login(_ command: CDVInvokedUrlCommand) {
-        let player = GKLocalPlayer.localPlayer()
+    @objc func login(_ command: CDVInvokedUrlCommand) {
+        let player = GKLocalPlayer.local
         
         if (setupDone) {
             if(connected){
@@ -81,15 +80,20 @@ class GameServices : CDVPlugin {
         }
         
 #if os(OSX)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.onActivate), name: NSNotification.Name.NSApplicationDidBecomeActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.onActivate), name: NSApplication.didBecomeActiveNotification, object: nil)
         
         self.windowLevel = self.webView.window!.level
-        self.webView.window?.level = NSNormalWindowLevel
+        self.webView.window?.level = NSWindow.Level.normal
 #endif
         
         player.authenticateHandler = {(ViewController, error) in
-            if(ViewController != nil) {
-                self.showController(ViewController!)
+            if let vc = ViewController {
+#if os(OSX)
+                self.viewController.contentViewController!.presentAsModalWindow(vc)
+#endif
+#if os(iOS)
+                self.viewController.present(vc, animated: true)
+#endif
             } else if (player.isAuthenticated) {
                 self.connected = true
                 let result = self.getOkResult(self.getPlayerOBJ(player))
@@ -109,20 +113,20 @@ class GameServices : CDVPlugin {
         setupDone = true
     }
     
-    func logout(_ command: CDVInvokedUrlCommand) {
+    @objc func logout(_ command: CDVInvokedUrlCommand) {
         self.commandDelegate.send(self.getErrorResult(ERROR.NOT_SUPPORTED, "Not Supported"), callbackId: command.callbackId)
     }
     
-    func getPlayerDetails(_ command: CDVInvokedUrlCommand) {
+    @objc func getPlayerDetails(_ command: CDVInvokedUrlCommand) {
         if (!checkConnected(command)) {
             return
         }
         
-        let localPlayer = GKLocalPlayer.localPlayer();
+        let localPlayer = GKLocalPlayer.local
         self.sendOkResult(command, getPlayerOBJ(localPlayer))
     }
     
-    func getPlayerScore(_ command: CDVInvokedUrlCommand){
+    @objc func getPlayerScore(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -134,9 +138,9 @@ class GameServices : CDVPlugin {
         leaderboard.identifier = leaderboardId
         
         switch span {
-            case 1: leaderboard.timeScope = GKLeaderboardTimeScope.week
-            case 2: leaderboard.timeScope = GKLeaderboardTimeScope.allTime
-            case _: leaderboard.timeScope = GKLeaderboardTimeScope.today
+            case 1: leaderboard.timeScope = GKLeaderboard.TimeScope.week
+            case 2: leaderboard.timeScope = GKLeaderboard.TimeScope.allTime
+            case _: leaderboard.timeScope = GKLeaderboard.TimeScope.today
         }
         
         leaderboard.loadScores { (scores, error) in
@@ -148,7 +152,7 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func getLeaderboardScores(_ command: CDVInvokedUrlCommand){
+    @objc func getLeaderboardScores(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -160,12 +164,12 @@ class GameServices : CDVPlugin {
         
         let leaderboard = GKLeaderboard()
         leaderboard.identifier = leaderboardId
-        leaderboard.playerScope = GKLeaderboardPlayerScope.global
+        leaderboard.playerScope = GKLeaderboard.PlayerScope.global
         
         switch span {
-            case 1: leaderboard.timeScope = GKLeaderboardTimeScope.week
-            case 2: leaderboard.timeScope = GKLeaderboardTimeScope.allTime
-            case _: leaderboard.timeScope = GKLeaderboardTimeScope.today
+        case 1: leaderboard.timeScope = GKLeaderboard.TimeScope.week
+        case 2: leaderboard.timeScope = GKLeaderboard.TimeScope.allTime
+        case _: leaderboard.timeScope = GKLeaderboard.TimeScope.today
         }
         leaderboard.range = NSRange(location: 1, length: maxResults)
 
@@ -179,7 +183,7 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func submitScore(_ command: CDVInvokedUrlCommand){
+    @objc func submitScore(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -201,7 +205,7 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func submitScores(_ command: CDVInvokedUrlCommand) {
+    @objc func submitScores(_ command: CDVInvokedUrlCommand) {
         if(!checkConnected(command)){
             return
         }
@@ -224,7 +228,7 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func showLeaderboard(_ command: CDVInvokedUrlCommand){
+    @objc func showLeaderboard(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -237,9 +241,9 @@ class GameServices : CDVPlugin {
         controller.leaderboardIdentifier = leaderboardId
         
         switch span {
-            case 1: controller.leaderboardTimeScope = GKLeaderboardTimeScope.week
-            case 2: controller.leaderboardTimeScope = GKLeaderboardTimeScope.allTime
-            case _: controller.leaderboardTimeScope = GKLeaderboardTimeScope.today
+            case 1: controller.leaderboardTimeScope = GKLeaderboard.TimeScope.week
+            case 2: controller.leaderboardTimeScope = GKLeaderboard.TimeScope.allTime
+            case _: controller.leaderboardTimeScope = GKLeaderboard.TimeScope.today
         }
         
         controller.gameCenterDelegate = createGCDelegate(command)
@@ -247,8 +251,7 @@ class GameServices : CDVPlugin {
         self.showController(controller)
     }
 
-    
-    func showLeaderboards(_ command: CDVInvokedUrlCommand){
+    @objc func showLeaderboards(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -260,7 +263,7 @@ class GameServices : CDVPlugin {
         self.showController(controller)
     }
     
-    func getAchievements(_ command: CDVInvokedUrlCommand){
+    @objc func getAchievements(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -276,7 +279,7 @@ class GameServices : CDVPlugin {
                         self.sendErrorResult(command, ERROR.SERVICE_ERROR, error!.localizedDescription)
                     } else {
                         for descr in descriptions! {
-                            var achievement = array.first(where: { ($0["id"] as! String) == descr.identifier! })
+                            var achievement = array.first(where: { ($0["id"] as! String) == descr.identifier })
                             if (achievement != nil) {
                                 achievement!["name"] = descr.title
                                 achievement!["desc"] = descr.description
@@ -292,7 +295,7 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func unlockAchievement(_ command: CDVInvokedUrlCommand){
+    @objc func unlockAchievement(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -313,7 +316,7 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func incrementAchievement(_ command: CDVInvokedUrlCommand){
+    @objc func incrementAchievement(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -335,7 +338,7 @@ class GameServices : CDVPlugin {
         }
     }
 
-    func showAchievements(_ command: CDVInvokedUrlCommand){
+    @objc func showAchievements(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -347,7 +350,7 @@ class GameServices : CDVPlugin {
         self.showController(controller)
     }
     
-    func resetAchievements(_ command: CDVInvokedUrlCommand){
+    @objc func resetAchievements(_ command: CDVInvokedUrlCommand){
         if(!checkConnected(command)){
             return
         }
@@ -361,12 +364,12 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func saveGame(_ command: CDVInvokedUrlCommand) {
+    @objc func saveGame(_ command: CDVInvokedUrlCommand) {
         if(!checkConnected(command)){
             return
         }
         
-        let player = GKLocalPlayer.localPlayer()
+        let player = GKLocalPlayer.local
         if(!player.isAuthenticated){
             self.sendErrorResult(command, ERROR.NOT_CONNECTED, "Not Connected")
             return
@@ -384,12 +387,12 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func deleteSaveGame(_ command: CDVInvokedUrlCommand) {
+    @objc func deleteSaveGame(_ command: CDVInvokedUrlCommand) {
         if(!checkConnected(command)){
             return
         }
         
-        let player = GKLocalPlayer.localPlayer()
+        let player = GKLocalPlayer.local
         if(!player.isAuthenticated){
             self.sendErrorResult(command, ERROR.NOT_CONNECTED, "Not Connected")
             return
@@ -406,12 +409,12 @@ class GameServices : CDVPlugin {
         }
     }
     
-    func loadSaveGame(_ command: CDVInvokedUrlCommand) {
+    @objc func loadSaveGame(_ command: CDVInvokedUrlCommand) {
         if(!checkConnected(command)){
             return
         }
         
-        let player = GKLocalPlayer.localPlayer()
+        let player = GKLocalPlayer.local
         if(!player.isAuthenticated){
             self.sendErrorResult(command, ERROR.NOT_CONNECTED, "Not Connected")
             return
@@ -454,7 +457,7 @@ class GameServices : CDVPlugin {
         self.viewController.present(controller, animated: true, completion: nil)
     }
 #else
-    private func showController(_ controller: NSViewController) {
+    private func showController(_ controller: NSViewController & GKViewController) {
         let dialog = GKDialogController.shared()
         dialog.parentWindow = self.webView.window!
         dialog.present(controller)
@@ -484,16 +487,16 @@ class GameServices : CDVPlugin {
     
     private func getPlayerOBJ(_ player: GKPlayer) -> [String:Any] {
         return [
-            "playerId": player.playerID!,
-            "playerName": player.alias!
+            "playerId": player.playerID,
+            "playerName": player.alias
         ]
     }
     
     private func getScoreOBJ(_ score: GKScore) -> [String:Any] {
-        let player = score.player!
+        let player = score.player
         return [
-            "playerId": player.playerID!,
-            "playerName": player.alias!,
+            "playerId": player.playerID,
+            "playerName": player.alias,
             "score": score.value,
             "rank": score.rank,
             "timestamp": Int64((score.date.timeIntervalSince1970 * 1000.0).rounded()),
@@ -503,7 +506,7 @@ class GameServices : CDVPlugin {
     
     private func getAchievementOBJ(_ achievement: GKAchievement) -> [String:Any] {
         return [
-            "id": achievement.identifier!,
+            "id": achievement.identifier,
             "timestamp": Int((achievement.lastReportedDate.timeIntervalSince1970 * 1000.0).rounded()),
             "isCompleted": achievement.isCompleted,
             "percent": achievement.percentComplete
